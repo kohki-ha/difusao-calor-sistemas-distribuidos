@@ -1,0 +1,54 @@
+# -----------------------------
+# .gitignore para projeto Java / Maven
+# -----------------------------
+
+# Build / output
+/target/
+/out/
+build/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+dependency-reduced-pom.xml
+release.properties
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# Generated sources
+/generated-sources/
+
+# Compiled class files
+*.class
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+
+# Others
+*.jar
+*.war
+*.ear
+
+# Ignore the ATIVIDADE file requested
+ATIVIDADE.md
+
+# If you use Gradle/IntelliJ, consider also ignoring these
+# .gradle/
+# /build/
