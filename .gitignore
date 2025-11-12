@@ -52,3 +52,12 @@ ATIVIDADE.md
 # If you use Gradle/IntelliJ, consider also ignoring these
 # .gradle/
 # /build/
+
+# NetBeans GUI form files generated into target/classes (ignore generated copies)
+/target/**/*.form
+
+# NetBeans project folder (if present locally)
+/nbproject/
+
+# Maven wrapper jar (if committed by tools)
+.mvn/wrapper/maven-wrapper.jar
