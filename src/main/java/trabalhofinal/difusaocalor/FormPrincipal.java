@@ -280,11 +280,11 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addComponent(lblTempo))
                                                         .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addComponent(lblPosicaoCalor))
                                 .addGap(58, 58, 58)
                                 .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -353,9 +353,9 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                 .addComponent(cbEsquerda))
                                                         .addGroup(layout.createSequentialGroup()
                                                                 .addGap(20, 20, 20)
-                                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                                                .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addContainerGap(16, Short.MAX_VALUE)));
 
         pack();
