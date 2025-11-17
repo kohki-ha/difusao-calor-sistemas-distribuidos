@@ -45,6 +45,8 @@ public class FormPrincipal extends javax.swing.JFrame {
         txtAltura.getDocument().addDocumentListener(docListener);
         txtCoeficienteMaterial.getDocument().addDocumentListener(docListener);
         txtTempo.getDocument().addDocumentListener(docListener);
+        // listener para campo de URLs dos workers (modo distribuído)
+        txtWorkerUrls.getDocument().addDocumentListener(docListener);
 
         // checkboxes already have action listeners generated -> reuse them to update
         // state
@@ -57,6 +59,10 @@ public class FormPrincipal extends javax.swing.JFrame {
         boolean inputsFilled = !txtAltura.getText().trim().isEmpty()
                 && !txtCoeficienteMaterial.getText().trim().isEmpty()
                 && !txtTempo.getText().trim().isEmpty();
+        // se modo distribuído selecionado, requerer URLs
+        if (rbDistribuido.isSelected()) {
+            inputsFilled = inputsFilled && txtWorkerUrls != null && !txtWorkerUrls.getText().trim().isEmpty();
+        }
         boolean positionSelected = cbCima.isSelected() || cbBaixo.isSelected() || cbDireita.isSelected()
                 || cbEsquerda.isSelected();
         btnEnviar.setEnabled(modeSelected && inputsFilled && positionSelected);
@@ -85,6 +91,7 @@ public class FormPrincipal extends javax.swing.JFrame {
         lblTempo = new javax.swing.JLabel();
         txtTempo = new javax.swing.JTextField();
         btnEnviar = new javax.swing.JButton();
+        btnResultados = new javax.swing.JButton();
         btnLimpar = new javax.swing.JToggleButton();
         pnMalha = new javax.swing.JPanel();
         rbParalelo = new javax.swing.JRadioButton();
@@ -162,6 +169,13 @@ public class FormPrincipal extends javax.swing.JFrame {
             }
         });
 
+        btnResultados.setText("Resultados");
+        btnResultados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnResultadosActionPerformed(evt);
+            }
+        });
+
         // remover borda externa para que a malha comece na borda do painel
         pnMalha.setBorder(null);
         pnMalha.setToolTipText("");
@@ -200,6 +214,12 @@ public class FormPrincipal extends javax.swing.JFrame {
             }
         });
 
+        // campo para informar URLs dos workers RMI (separo por vírgula)
+        lblWorkerUrls = new javax.swing.JLabel();
+        txtWorkerUrls = new javax.swing.JTextField();
+        lblWorkerUrls.setText("Workers RMI (vírgula separado)");
+        txtWorkerUrls.setText("rmi://localhost:1099/Worker1");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -237,8 +257,12 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE, 98,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(rbDistribuido,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 98,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 98,
+                                                            javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(lblWorkerUrls)
+                                                        .addComponent(txtWorkerUrls,
+                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 220,
+                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
                                                 .addGap(83, 83, 83)
                                                 .addGroup(layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -256,9 +280,11 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addComponent(lblTempo))
                                                         .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                111, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                            70, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addComponent(lblPosicaoCalor))
                                 .addGap(58, 58, 58)
                                 .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -301,15 +327,21 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                         .addComponent(rbParalelo))
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(rbDistribuido)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(lblWorkerUrls)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                    javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(18, 18, 18)
                                                 .addComponent(lblPosicaoCalor)
                                                 .addGap(21, 21, 21)
                                                 .addComponent(cbCima)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(layout
-                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                        .addComponent(cbBaixo)
-                                                        .addComponent(btnEnviar))
+                                                    .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                    .addComponent(cbBaixo)
+                                                    .addComponent(btnEnviar))
                                                 .addGroup(layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                         .addGroup(layout.createSequentialGroup()
@@ -321,7 +353,9 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                 .addComponent(cbEsquerda))
                                                         .addGroup(layout.createSequentialGroup()
                                                                 .addGap(20, 20, 20)
-                                                                .addComponent(btnLimpar)))))
+                                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addContainerGap(16, Short.MAX_VALUE)));
 
         pack();
@@ -372,6 +406,120 @@ public class FormPrincipal extends javax.swing.JFrame {
     private void btnLimparActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnLimparActionPerformed
         limpar();
     }// GEN-LAST:event_btnLimparActionPerformed
+
+    private void btnResultadosActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnResultadosActionPerformed
+        // lê parâmetros da UI
+        int n;
+        double alpha;
+        int steps;
+        int repeats = 3; // padrão
+        try {
+            n = Integer.parseInt(txtAltura.getText());
+            alpha = Double.parseDouble(txtCoeficienteMaterial.getText());
+            steps = Integer.parseInt(txtTempo.getText());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Verifique as entradas: dimensão, coeficiente e tempo devem ser números.", "Entrada inválida",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        final int fn = n;
+        final double falpha = alpha;
+        final int fsteps = steps;
+        final int frepeats = repeats;
+
+        // pega URLs (opcional)
+        final java.util.List<String> urls = new java.util.ArrayList<>();
+        String urlsText = txtWorkerUrls.getText().trim();
+        if (!urlsText.isEmpty()) {
+            for (String p : urlsText.split(",")) {
+                String u = p.trim();
+                if (!u.isEmpty())
+                    urls.add(u);
+            }
+        }
+
+        // executa em background para não travar a UI
+        btnResultados.setEnabled(false);
+        btnEnviar.setEnabled(false);
+        btnLimpar.setEnabled(false);
+
+        javax.swing.SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
+            private BenchmarkUtil.Stats seqStats;
+            private BenchmarkUtil.Stats distStats;
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                seqStats = BenchmarkUtil.runSequential(fn, falpha, fsteps, frepeats);
+                if (!urls.isEmpty()) {
+                    distStats = BenchmarkUtil.runDistributed(fn, falpha, fsteps, frepeats, urls);
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                btnResultados.setEnabled(true);
+                btnEnviar.setEnabled(true);
+                btnLimpar.setEnabled(true);
+
+                String header = String.format("Benchmark (n=%d steps=%d repeats=%d)", fn, fsteps, frepeats);
+
+                // cria diálogo com texto e gráfico
+                javax.swing.JDialog dlg = new javax.swing.JDialog(FormPrincipal.this, "Resultados do Benchmark", true);
+                dlg.setLayout(new java.awt.BorderLayout());
+
+                StringBuilder sb = new StringBuilder();
+                if (seqStats != null && !seqStats.runs.isEmpty()) {
+                    sb.append(String.format("Sequencial — mean=%.6fs median=%.6fs sd=%.6fs\n", seqStats.mean,
+                            seqStats.median, seqStats.sd));
+                } else {
+                    sb.append("Sequencial — sem dados\n");
+                }
+                if (distStats != null && !distStats.runs.isEmpty()) {
+                    sb.append(String.format("Distribuído — mean=%.6fs median=%.6fs sd=%.6fs\n", distStats.mean,
+                            distStats.median, distStats.sd));
+                    if (seqStats != null && !Double.isNaN(seqStats.mean)) {
+                        double ratio = seqStats.mean / distStats.mean;
+                        if (ratio > 1.0) {
+                            sb.append(String.format("Resultado: Distribuído foi mais rápido (speedup=%.2f×)\n", ratio));
+                        } else if (ratio < 1.0) {
+                            sb.append(String.format("Resultado: Sequencial foi mais rápido (speedup=%.2f×)\n",
+                                    1.0 / ratio));
+                        } else {
+                            sb.append("Resultado: Empate (tempos iguais)\n");
+                        }
+                    }
+                } else {
+                    sb.append("Distribuído — sem dados (nenhum worker configurado ou falha)\n");
+                }
+
+                javax.swing.JTextArea ta = new javax.swing.JTextArea(header + "\n\n" + sb.toString());
+                ta.setEditable(false);
+                ta.setBackground(dlg.getBackground());
+                ta.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+                dlg.add(ta, java.awt.BorderLayout.NORTH);
+
+                BenchmarkChartPanel chart = new BenchmarkChartPanel(seqStats == null ? null : seqStats.runs,
+                        distStats == null ? null : distStats.runs);
+                chart.setPreferredSize(new java.awt.Dimension(600, 300));
+                dlg.add(chart, java.awt.BorderLayout.CENTER);
+
+                javax.swing.JButton close = new javax.swing.JButton("Fechar");
+                close.addActionListener(ae -> dlg.dispose());
+                javax.swing.JPanel bottom = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+                bottom.add(close);
+                dlg.add(bottom, java.awt.BorderLayout.SOUTH);
+
+                dlg.pack();
+                dlg.setLocationRelativeTo(FormPrincipal.this);
+                dlg.setVisible(true);
+            }
+        };
+
+        worker.execute();
+    }// GEN-LAST:event_btnResultadosActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEnviarActionPerformed
         gerarMalha();
@@ -469,11 +617,26 @@ public class FormPrincipal extends javax.swing.JFrame {
                     "Aviso", JOptionPane.INFORMATION_MESSAGE);
             simulator = new SequentialHeatSimulator(n, alpha);
         } else if (rbDistribuido.isSelected()) {
-            // modo distribuído ainda não implementado — avisa e usa sequencial como
-            // fallback
-            JOptionPane.showMessageDialog(this, "Modo distribuído não implementado. Executando em modo sequencial.",
-                    "Aviso", JOptionPane.INFORMATION_MESSAGE);
-            simulator = new SequentialHeatSimulator(n, alpha);
+            // modo distribuído: cria DistributedHeatSimulator com URLs informadas
+            String urlsText = txtWorkerUrls.getText().trim();
+            if (urlsText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker para o modo distribuído.",
+                        "Entrada inválida", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String[] parts = urlsText.split(",");
+            java.util.List<String> urls = new java.util.ArrayList<>();
+            for (String p : parts) {
+                String u = p.trim();
+                if (!u.isEmpty())
+                    urls.add(u);
+            }
+            if (urls.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker válido.", "Entrada inválida",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            simulator = new DistributedHeatSimulator(n, alpha, urls);
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um modo de execução (Sequencial/Paralelo/Distribuído).",
                     "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -531,6 +694,14 @@ public class FormPrincipal extends javax.swing.JFrame {
 
             if (t[0] >= tempoIteracoes) {
                 ((javax.swing.Timer) e.getSource()).stop();
+                // se for simulador distribuído, realizar shutdown para liberar threadpool
+                if (sim instanceof DistributedHeatSimulator) {
+                    try {
+                        ((DistributedHeatSimulator) sim).shutdown();
+                    } catch (Exception ex) {
+                        // swallow - apenas tentativa de cleanup
+                    }
+                }
                 btnEnviar.setEnabled(true);
                 btnLimpar.setEnabled(true);
                 if (progressBar != null)
@@ -598,6 +769,7 @@ public class FormPrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEnviar;
+    private javax.swing.JButton btnResultados;
     private javax.swing.JToggleButton btnLimpar;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbBaixo;
@@ -608,6 +780,8 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel lblDimensao;
     private javax.swing.JLabel lblPosicaoCalor;
     private javax.swing.JLabel lblTempo;
+    private javax.swing.JLabel lblWorkerUrls;
+    private javax.swing.JTextField txtWorkerUrls;
     private javax.swing.JPanel pnMalha;
     private javax.swing.JRadioButton rbParalelo;
     private javax.swing.JRadioButton rbSequencial;
