@@ -7,6 +7,9 @@ package trabalhofinal.difusaocalor;
 // import javax.swing.border.LineBorder; (não usado após remoção das bordas das células)
 import java.awt.BorderLayout;
 // import java.awt.Color; (não usado aqui)
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
@@ -14,6 +17,9 @@ import javax.swing.JOptionPane;
  * @author Kaneko
  */
 public class FormPrincipal extends javax.swing.JFrame {
+
+    private static final int MAX_RECORDED_FRAMES = 300;
+    private static final int MAX_DISPLAY_SIZE = 200;
 
     private HeatGridPanel heatPanel;
     private javax.swing.JProgressBar progressBar;
@@ -257,12 +263,12 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE, 98,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(rbDistribuido,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 98,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 98,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(lblWorkerUrls)
                                                         .addComponent(txtWorkerUrls,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE, 220,
-                                                            javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 220,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
                                                 .addGap(83, 83, 83)
                                                 .addGroup(layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -280,11 +286,12 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addComponent(lblTempo))
                                                         .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                            90, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                                90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(btnResultados,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addComponent(lblPosicaoCalor))
                                 .addGap(58, 58, 58)
                                 .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -331,17 +338,17 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addComponent(lblWorkerUrls)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(txtWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                    javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(18, 18, 18)
                                                 .addComponent(lblPosicaoCalor)
                                                 .addGap(21, 21, 21)
                                                 .addComponent(cbCima)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(layout
-                                                    .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                    .addComponent(cbBaixo)
-                                                    .addComponent(btnEnviar))
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(cbBaixo)
+                                                        .addComponent(btnEnviar))
                                                 .addGroup(layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                         .addGroup(layout.createSequentialGroup()
@@ -353,9 +360,14 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                                 .addComponent(cbEsquerda))
                                                         .addGroup(layout.createSequentialGroup()
                                                                 .addGap(20, 20, 20)
-                                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                                .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                                                .addComponent(btnLimpar,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 30,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(
+                                                                        javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(btnResultados,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE, 30,
+                                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))))
                                 .addContainerGap(16, Short.MAX_VALUE)));
 
         pack();
@@ -607,121 +619,271 @@ public class FormPrincipal extends javax.swing.JFrame {
             return;
         }
 
-        // cria o simulador (lógica separada) de acordo com a opção selecionada
-        AbstractHeatSimulator simulator = null;
+        ExecutionMode mode;
         if (rbSequencial.isSelected()) {
-            simulator = new SequentialHeatSimulator(n, alpha);
+            mode = ExecutionMode.SEQUENCIAL;
         } else if (rbParalelo.isSelected()) {
-            // modo paralelo ainda não implementado — avisa e usa sequencial como fallback
             JOptionPane.showMessageDialog(this, "Modo paralelo não implementado. Executando em modo sequencial.",
                     "Aviso", JOptionPane.INFORMATION_MESSAGE);
-            simulator = new SequentialHeatSimulator(n, alpha);
+            mode = ExecutionMode.SEQUENCIAL;
         } else if (rbDistribuido.isSelected()) {
-            // modo distribuído: cria DistributedHeatSimulator com URLs informadas
-            String urlsText = txtWorkerUrls.getText().trim();
-            if (urlsText.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker para o modo distribuído.",
-                        "Entrada inválida", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            String[] parts = urlsText.split(",");
-            java.util.List<String> urls = new java.util.ArrayList<>();
-            for (String p : parts) {
-                String u = p.trim();
-                if (!u.isEmpty())
-                    urls.add(u);
-            }
-            if (urls.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker válido.", "Entrada inválida",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            simulator = new DistributedHeatSimulator(n, alpha, urls);
+            mode = ExecutionMode.DISTRIBUIDO;
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um modo de execução (Sequencial/Paralelo/Distribuído).",
                     "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        simulator.setBoundaryFlags(cbCima.isSelected(), cbBaixo.isSelected(), cbEsquerda.isSelected(),
-                cbDireita.isSelected());
+        List<String> workerUrls = new ArrayList<>();
+        if (mode == ExecutionMode.DISTRIBUIDO) {
+            String urlsText = txtWorkerUrls.getText().trim();
+            if (urlsText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker para o modo distribuído.",
+                        "Entrada inválida", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            for (String raw : urlsText.split(",")) {
+                String cleaned = raw.trim();
+                if (!cleaned.isEmpty())
+                    workerUrls.add(cleaned);
+            }
+            if (workerUrls.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Informe ao menos um URL de worker válido.", "Entrada inválida",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
 
-        // local final usado dentro do Timer (lambda requer variável efetivamente final)
-        final AbstractHeatSimulator sim = simulator;
+        final boolean cima = cbCima.isSelected();
+        final boolean baixo = cbBaixo.isSelected();
+        final boolean esquerda = cbEsquerda.isSelected();
+        final boolean direita = cbDireita.isSelected();
 
-        // se estivermos usando o painel customizado, atualizamos via heatPanel
-        // java.awt.Component[] paineis = pnMalha.getComponents();
+        runMeasuredSimulation(mode, n, alpha, tempoIteracoes, workerUrls, cima, baixo, esquerda, direita);
+    }
 
-        // desabilita botões enquanto roda
+    private enum ExecutionMode {
+        SEQUENCIAL,
+        PARALELO,
+        DISTRIBUIDO
+    }
+
+    private static class SimulationFrame {
+        final int step;
+        final double[][] snapshot;
+
+        SimulationFrame(int step, double[][] snapshot) {
+            this.step = step;
+            this.snapshot = snapshot;
+        }
+    }
+
+    private static class SimulationPlaybackData {
+        final double elapsedSeconds;
+        final List<SimulationFrame> frames;
+        final int totalSteps;
+        final double[][] finalStateFull;
+
+        SimulationPlaybackData(double elapsedSeconds, List<SimulationFrame> frames, int totalSteps,
+                double[][] finalStateFull) {
+            this.elapsedSeconds = elapsedSeconds;
+            this.frames = Collections.unmodifiableList(new ArrayList<>(frames));
+            this.totalSteps = totalSteps;
+            this.finalStateFull = finalStateFull;
+        }
+    }
+
+    private AbstractHeatSimulator buildSimulator(ExecutionMode mode, int n, double alpha, List<String> workerUrls) {
+        switch (mode) {
+            case DISTRIBUIDO:
+                return new DistributedHeatSimulator(n, alpha, workerUrls);
+            case PARALELO:
+            case SEQUENCIAL:
+            default:
+                return new SequentialHeatSimulator(n, alpha);
+        }
+    }
+
+    private void cleanupSimulator(AbstractHeatSimulator simulator) {
+        if (simulator instanceof DistributedHeatSimulator) {
+            try {
+                ((DistributedHeatSimulator) simulator).shutdown();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private void runMeasuredSimulation(ExecutionMode mode, int n, double alpha, int totalSteps,
+            List<String> workerUrls, boolean cima, boolean baixo, boolean esquerda, boolean direita) {
+        final ExecutionMode chosenMode = mode;
+        final List<String> urlsCopy = new ArrayList<>(workerUrls);
+
+        if (progressBar != null) {
+            progressBar.setIndeterminate(true);
+            progressBar.setValue(0);
+        }
+        if (lblStatus != null) {
+            lblStatus.setText("Calculando simulação real...");
+        }
         btnEnviar.setEnabled(false);
         btnLimpar.setEnabled(false);
 
-        final int[] t = { 0 };
-        int delayMs = 50; // controle visual da taxa de atualização
+        javax.swing.SwingWorker<SimulationPlaybackData, Void> worker = new javax.swing.SwingWorker<>() {
+            @Override
+            protected SimulationPlaybackData doInBackground() throws Exception {
+                AbstractHeatSimulator sim = buildSimulator(chosenMode, n, alpha, urlsCopy);
+                sim.setBoundaryFlags(cima, baixo, esquerda, direita);
 
-        final long startTime = System.nanoTime();
-        final int totalSteps = tempoIteracoes;
+                List<SimulationFrame> frames = new ArrayList<>();
+                frames.add(new SimulationFrame(0, downsampleMatrix(sim.getTemperatureCopy())));
 
-        javax.swing.Timer timer = new javax.swing.Timer(delayMs, e -> {
-            sim.step();
+                int stride = Math.max(1, (int) Math.ceil((double) totalSteps / MAX_RECORDED_FRAMES));
+                long start = System.nanoTime();
+                double[][] finalState = null;
 
-            double[][] T = sim.getTemperatureCopy();
-
-            if (heatPanel != null) {
-                heatPanel.setTemperature(T);
-            } else {
-                // fallback (não esperado)
-                pnMalha.repaint();
-            }
-
-            t[0]++;
-
-            // atualiza progress bar e status
-            if (progressBar != null && lblStatus != null) {
-                int step = t[0];
-                int pct = Math.min(100, (int) ((step * 100L) / totalSteps));
-                progressBar.setValue(pct);
-
-                long now = System.nanoTime();
-                long elapsedMs = (now - startTime) / 1_000_000L;
-                long avgPerStep = step > 0 ? elapsedMs / step : 0;
-                long remainingMs = avgPerStep * (totalSteps - step);
-
-                lblStatus.setText(String.format("It: %d/%d — %s / %s", step, totalSteps, formatMs(elapsedMs),
-                        formatMs(remainingMs)));
-                this.setTitle(String.format("Difusão de Calor — %d%%", pct));
-            }
-
-            if (t[0] >= tempoIteracoes) {
-                ((javax.swing.Timer) e.getSource()).stop();
-                // se for simulador distribuído, realizar shutdown para liberar threadpool
-                if (sim instanceof DistributedHeatSimulator) {
-                    try {
-                        ((DistributedHeatSimulator) sim).shutdown();
-                    } catch (Exception ex) {
-                        // swallow - apenas tentativa de cleanup
+                for (int step = 1; step <= totalSteps; step++) {
+                    sim.step();
+                    if (step % stride == 0 || step == totalSteps) {
+                        double[][] snapshot = sim.getTemperatureCopy();
+                        if (step == totalSteps) {
+                            finalState = snapshot;
+                        }
+                        frames.add(new SimulationFrame(step, downsampleMatrix(snapshot)));
                     }
                 }
-                btnEnviar.setEnabled(true);
-                btnLimpar.setEnabled(true);
-                if (progressBar != null)
-                    progressBar.setValue(100);
-                if (lblStatus != null)
-                    lblStatus.setText("Concluído — tempo: " + formatMs((System.nanoTime() - startTime) / 1_000_000L));
-                this.setTitle("Difusão de Calor");
-            }
-        });
 
+                long end = System.nanoTime();
+                double elapsed = (end - start) / 1_000_000_000.0;
+                cleanupSimulator(sim);
+                return new SimulationPlaybackData(elapsed, frames, totalSteps, finalState);
+            }
+
+            @Override
+            protected void done() {
+                if (progressBar != null) {
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(0);
+                }
+                SimulationPlaybackData data;
+                try {
+                    data = get();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(FormPrincipal.this,
+                            "Falha ao executar a simulação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                    finalizePlaybackFailure();
+                    return;
+                }
+                playbackSimulation(data);
+            }
+        };
+
+        worker.execute();
+    }
+
+    private void playbackSimulation(SimulationPlaybackData data) {
+        if (heatPanel == null || data.frames.isEmpty()) {
+            finalizePlaybackSuccess(data);
+            return;
+        }
+
+        if (progressBar != null) {
+            progressBar.setValue(0);
+        }
+        if (lblStatus != null) {
+            lblStatus.setText(String.format("Reproduzindo simulação — tempo real %.3fs", data.elapsedSeconds));
+        }
+
+        final int[] index = { 0 };
+        javax.swing.Timer timer = new javax.swing.Timer(50, null);
+        timer.addActionListener(e -> {
+            if (index[0] >= data.frames.size()) {
+                ((javax.swing.Timer) e.getSource()).stop();
+                finalizePlaybackSuccess(data);
+                return;
+            }
+            SimulationFrame frame = data.frames.get(index[0]);
+            heatPanel.setTemperature(frame.snapshot);
+            updatePlaybackStatus(frame.step, data.totalSteps, data.elapsedSeconds);
+            index[0]++;
+        });
         timer.start();
     }
 
-    // A conversão de temperatura para cor é feita em HeatGridPanel
+    private void updatePlaybackStatus(int step, int totalSteps, double elapsedSeconds) {
+        int pct = totalSteps == 0 ? 100 : Math.min(100, (int) ((step * 100L) / totalSteps));
+        if (progressBar != null) {
+            progressBar.setValue(pct);
+        }
+        if (lblStatus != null) {
+            lblStatus.setText(String.format("It: %d/%d — tempo real %.3fs", step, totalSteps, elapsedSeconds));
+        }
+        this.setTitle(String.format("Difusão de Calor — %d%%", pct));
+    }
 
-    private static String formatMs(long ms) {
-        long totalSec = ms / 1000;
-        long min = totalSec / 60;
-        long sec = totalSec % 60;
-        return String.format("%02d:%02d", min, sec);
+    private void finalizePlaybackSuccess(SimulationPlaybackData data) {
+        if (heatPanel != null && data.finalStateFull != null) {
+            heatPanel.setTemperature(downsampleMatrix(data.finalStateFull));
+        }
+        if (progressBar != null) {
+            progressBar.setValue(100);
+            progressBar.setIndeterminate(false);
+        }
+        if (lblStatus != null) {
+            lblStatus.setText(String.format("Concluído — tempo real: %.3fs", data.elapsedSeconds));
+        }
+        btnEnviar.setEnabled(true);
+        btnLimpar.setEnabled(true);
+        this.setTitle("Difusão de Calor");
+    }
+
+    private void finalizePlaybackFailure() {
+        if (progressBar != null) {
+            progressBar.setValue(0);
+            progressBar.setIndeterminate(false);
+        }
+        if (lblStatus != null) {
+            lblStatus.setText("Simulação não iniciada");
+        }
+        btnEnviar.setEnabled(true);
+        btnLimpar.setEnabled(true);
+        this.setTitle("Difusão de Calor");
+    }
+
+    private double[][] downsampleMatrix(double[][] source) {
+        if (source == null) {
+            return null;
+        }
+        int n = source.length;
+        if (n == 0) {
+            return new double[0][0];
+        }
+        if (n <= MAX_DISPLAY_SIZE) {
+            double[][] copy = new double[n][n];
+            for (int i = 0; i < n; i++) {
+                System.arraycopy(source[i], 0, copy[i], 0, n);
+            }
+            return copy;
+        }
+
+        int factor = (int) Math.ceil((double) n / MAX_DISPLAY_SIZE);
+        int target = (int) Math.ceil((double) n / factor);
+        double[][] result = new double[target][target];
+        for (int i = 0; i < target; i++) {
+            for (int j = 0; j < target; j++) {
+                double sum = 0.0;
+                int count = 0;
+                int startI = i * factor;
+                int startJ = j * factor;
+                for (int si = startI; si < Math.min(n, startI + factor); si++) {
+                    for (int sj = startJ; sj < Math.min(n, startJ + factor); sj++) {
+                        sum += source[si][sj];
+                        count++;
+                    }
+                }
+                result[i][j] = count == 0 ? 0.0 : sum / count;
+            }
+        }
+        return result;
     }
 
     /**
