@@ -30,35 +30,36 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="txtAltura" alignment="0" max="32767" attributes="0"/>
-                              <Component id="lblDimensao" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="cbCima" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                          <Component id="cbDireita" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                          <Component id="cbBaixo" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                          <Component id="cbEsquerda" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
-                          <Component id="rbSequencial" min="-2" pref="98" max="-2" attributes="0"/>
-                          <Component id="rbParalelo" min="-2" pref="98" max="-2" attributes="0"/>
-                          <Component id="rbDistribuido" min="-2" pref="98" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="83" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="lblCoeficienteMaterial" max="32767" attributes="0"/>
-                              <Component id="txtCoeficienteMaterial" max="32767" attributes="0"/>
-                              <Component id="txtTempo" min="-2" pref="128" max="-2" attributes="0"/>
-                              <Component id="lblTempo" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="btnLimpar" min="-2" pref="111" max="-2" attributes="0"/>
-                          <Component id="btnEnviar" alignment="1" min="-2" pref="111" max="-2" attributes="0"/>
-                      </Group>
+                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="txtAltura" alignment="0" max="32767" attributes="0"/>
+                      <Component id="lblDimensao" alignment="0" max="32767" attributes="0"/>
+                      <Component id="lblCoeficienteMaterial" alignment="0" max="32767" attributes="0"/>
+                      <Component id="txtCoeficienteMaterial" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="lblPosicaoCalor" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblParallelThreads" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtParallelThreads" min="-2" pref="120" max="-2" attributes="0"/>
+                  <Component id="lblWorkerUrls" min="-2" max="-2" attributes="0"/>
+                  <Component id="txtWorkerUrls" alignment="0" min="-2" pref="220" max="-2" attributes="0"/>
+                  <Component id="txtTempo" min="-2" pref="128" max="-2" attributes="0"/>
+                  <Component id="lblTempo" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="101" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="rbSequencial" min="-2" pref="98" max="-2" attributes="0"/>
+                  <Component id="rbParalelo" min="-2" pref="98" max="-2" attributes="0"/>
+                  <Component id="rbDistribuido" min="-2" pref="98" max="-2" attributes="0"/>
+                  <Component id="cbCima" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
+                  <Component id="cbDireita" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
+                  <Component id="cbBaixo" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
+                  <Component id="cbEsquerda" alignment="0" min="-2" pref="85" max="-2" attributes="0"/>
+                  <Component id="lblPosicaoCalor" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                      <Component id="btnLimpar" min="-2" pref="111" max="-2" attributes="0"/>
+                      <Component id="btnEnviar" alignment="1" min="-2" pref="111" max="-2" attributes="0"/>
+                      <Component id="btnResultados" alignment="1" min="-2" pref="111" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
               <Component id="pnMalha" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="50" max="32767" attributes="0"/>
           </Group>
@@ -69,53 +70,54 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="pnMalha" min="-2" max="-2" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="lblCoeficienteMaterial" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblDimensao" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="txtCoeficienteMaterial" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txtAltura" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-            <Group type="103" groupAlignment="3" attributes="0">
-              <Component id="lblTempo" alignment="3" min="-2" max="-2" attributes="0"/>
-              <Component id="rbSequencial" alignment="3" min="-2" max="-2" attributes="0"/>
-            </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-            <Group type="103" groupAlignment="3" attributes="0">
-              <Component id="txtTempo" alignment="3" min="-2" max="-2" attributes="0"/>
-              <Component id="rbParalelo" alignment="3" min="-2" max="-2" attributes="0"/>
-            </Group>
-            <EmptySpace max="-2" attributes="0"/>
-            <Component id="rbDistribuido" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="lblPosicaoCalor" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="cbCima" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="cbBaixo" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="btnEnviar" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbDireita" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbEsquerda" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
-                              <Component id="btnLimpar" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
+                      <Component id="cbBaixo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbDireita" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbEsquerda" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="rbSequencial" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="rbParalelo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="rbDistribuido" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="btnEnviar" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnLimpar" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnResultados" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="pnMalha" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                      <Component id="lblDimensao" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="txtAltura" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="lblCoeficienteMaterial" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="txtCoeficienteMaterial" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="lblTempo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="txtTempo" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="lblParallelThreads" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="txtParallelThreads" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="lblWorkerUrls" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="txtWorkerUrls" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="16" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -204,6 +206,14 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLimparActionPerformed"/>
       </Events>
     </Component>
+    <Component class="javax.swing.JButton" name="btnResultados">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Resultados"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnResultadosActionPerformed"/>
+      </Events>
+    </Component>
     <Container class="javax.swing.JPanel" name="pnMalha">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -263,6 +273,27 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbSequencialActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblParallelThreads">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Threads (paralelo)"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtParallelThreads">
+      <Properties>
+        <Property name="columns" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="4"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblWorkerUrls">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Workers RMI (v&#xed;rgula separado)"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtWorkerUrls">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="rmi://localhost:1099/Worker1"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

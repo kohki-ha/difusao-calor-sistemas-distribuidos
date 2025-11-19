@@ -1,11 +1,14 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.benchmark;
+
+import trabalhofinal.difusaocalor.simulator.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Utilitário para executar benchmarks de forma programática e retornar estatísticas.
+ * Utilitário para executar benchmarks de forma programática e retornar
+ * estatísticas.
  */
 public class BenchmarkUtil {
 
@@ -29,6 +32,23 @@ public class BenchmarkUtil {
             SequentialHeatSimulator sim = new SequentialHeatSimulator(n, alpha);
             sim.setBoundaryFlags(true, false, false, false);
             double s = sim.measureRunSeconds(steps, true);
+            times.add(s);
+        }
+        return buildStats(times);
+    }
+
+    public static Stats runParallel(int n, double alpha, int steps, int repeats, int threadCount) {
+        List<Double> times = new ArrayList<>();
+        int workers = threadCount <= 0 ? Runtime.getRuntime().availableProcessors() : threadCount;
+        for (int r = 0; r < repeats; r++) {
+            ParallelHeatSimulator sim = new ParallelHeatSimulator(n, alpha, workers);
+            sim.setBoundaryFlags(true, false, false, false);
+            double s;
+            try {
+                s = sim.measureRunSeconds(steps, true);
+            } finally {
+                sim.shutdown();
+            }
             times.add(s);
         }
         return buildStats(times);

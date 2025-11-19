@@ -1,4 +1,4 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;

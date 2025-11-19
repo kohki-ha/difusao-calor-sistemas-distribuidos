@@ -1,4 +1,6 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.benchmark;
+
+import trabalhofinal.difusaocalor.simulator.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,11 +12,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Runner simples para comparar performance entre modos Sequencial e Distribuído.
+ * Runner simples para comparar performance entre modos Sequencial, Paralelo e
+ * Distribuído.
  * Uso:
- * java -cp target\classes trabalhofinal.difusaocalor.BenchmarkRunner <mode> <n> <alpha> <steps> <repeats> [workerUrls]
- * mode = sequencial | distribuido | both
- * workerUrls (apenas para distribuido) = rmi://host:port/Name,rmi://... (vírgula separado)
+ * java -cp target\classes trabalhofinal.difusaocalor.BenchmarkRunner <mode> <n>
+ * <alpha> <steps> <repeats> [workerUrls]
+ * mode = sequencial | paralelo | distribuido | both
+ * workerUrls (apenas para distribuido) = rmi://host:port/Name,rmi://...
+ * (vírgula separado)
  */
 public class BenchmarkRunner {
 
@@ -40,11 +45,26 @@ public class BenchmarkRunner {
             }
         }
 
+        String threadsProp = System.getProperty("benchmark.parallel.threads");
+        int parallelThreads = Runtime.getRuntime().availableProcessors();
+        if (threadsProp != null) {
+            try {
+                int parsed = Integer.parseInt(threadsProp);
+                if (parsed > 0)
+                    parallelThreads = parsed;
+            } catch (NumberFormatException ignore) {
+            }
+        }
+
         Path report = Path.of("benchmark-report.csv");
         List<String> lines = new ArrayList<>();
         lines.add("mode,n,alpha,steps,repeat,seconds");
 
-        if (mode.equals("sequencial") || mode.equals("both")) {
+        boolean runSequential = mode.equals("sequencial") || mode.equals("both");
+        boolean runParallel = mode.equals("paralelo") || mode.equals("both");
+        boolean runDistributed = mode.equals("distribuido") || mode.equals("both");
+
+        if (runSequential) {
             System.out.println("Running sequential benchmark: n=" + n + " alpha=" + alpha + " steps=" + steps
                     + " repeats=" + repeats);
             List<Double> times = new ArrayList<>();
@@ -59,7 +79,27 @@ public class BenchmarkRunner {
             printStats("sequencial", times);
         }
 
-        if (mode.equals("distribuido") || mode.equals("both")) {
+        if (runParallel) {
+            System.out.println("Running parallel benchmark: n=" + n + " alpha=" + alpha + " steps=" + steps
+                    + " repeats=" + repeats + " threads=" + parallelThreads);
+            List<Double> times = new ArrayList<>();
+            for (int r = 0; r < repeats; r++) {
+                ParallelHeatSimulator sim = new ParallelHeatSimulator(n, alpha, parallelThreads);
+                sim.setBoundaryFlags(true, false, false, false);
+                double s;
+                try {
+                    s = sim.measureRunSeconds(steps, true);
+                } finally {
+                    sim.shutdown();
+                }
+                System.out.printf("Parallel run %d: %.6fs%n", r + 1, s);
+                times.add(s);
+                lines.add(String.format("paralelo,%d,%.6f,%d,%d,%.6f", n, alpha, steps, r + 1, s));
+            }
+            printStats("paralelo", times);
+        }
+
+        if (runDistributed) {
             System.out.println("Running distributed benchmark: n=" + n + " alpha=" + alpha + " steps=" + steps
                     + " repeats=" + repeats + " workers=" + workerUrls.size());
             List<Double> times = new ArrayList<>();
