@@ -26,6 +26,8 @@ public class WorkerServer {
         String url = "rmi://localhost:" + port + "/" + name;
         WorkerImpl impl = new WorkerImpl();
         Naming.rebind(url, impl);
-        System.out.println("Worker bound at " + url);
+        System.out.println("Worker bound at " + url + ". Pressione Ctrl+C para encerrar.");
+        // manter processo vivo para atender chamadas remotas
+        new java.util.concurrent.CountDownLatch(1).await();
     }
 }
