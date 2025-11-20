@@ -1,4 +1,4 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.simulator;
 
 /**
  * Classe base abstrata para simuladores de difusão de calor.

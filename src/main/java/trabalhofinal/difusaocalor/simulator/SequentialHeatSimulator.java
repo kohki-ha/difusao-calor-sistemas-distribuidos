@@ -1,4 +1,4 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.simulator;
 
 /**
  * Implementação sequencial simples do simulador de difusão de calor.

@@ -1,4 +1,4 @@
-package trabalhofinal.difusaocalor;
+package trabalhofinal.difusaocalor.simulator;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -49,7 +49,7 @@ public class DistributedHeatSimulator extends AbstractHeatSimulator {
 
 		List<Future<WorkerResult>> futures = new ArrayList<>();
 
-		int cur = 1; 
+		int cur = 1;
 		for (int i = 0; i < workers && cur <= n - 2; i++) {
 			int chunk = base + (i < rem ? 1 : 0);
 			if (chunk <= 0) {
@@ -90,6 +90,7 @@ public class DistributedHeatSimulator extends AbstractHeatSimulator {
 				}
 			} catch (InterruptedException | ExecutionException e) {
 				Throwable cause = e.getCause();
+				System.err.println("Worker futuro falhou: " + (cause != null ? cause : e));
 				localCompute(1, n - 2);
 			}
 		}
