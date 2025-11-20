@@ -150,7 +150,8 @@ public class FormPrincipal extends javax.swing.JFrame {
         lblParallelThreads = new javax.swing.JLabel();
         txtParallelThreads = new javax.swing.JTextField();
         lblWorkerUrls = new javax.swing.JLabel();
-        txtWorkerUrls = new javax.swing.JTextField();
+        scrollWorkerUrls = new javax.swing.JScrollPane();
+        txtWorkerUrls = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -271,7 +272,12 @@ public class FormPrincipal extends javax.swing.JFrame {
 
         lblWorkerUrls.setText("Workers RMI (vírgula separado)");
 
+        txtWorkerUrls.setColumns(20);
+        txtWorkerUrls.setRows(2);
+        txtWorkerUrls.setLineWrap(true);
+        txtWorkerUrls.setWrapStyleWord(true);
         txtWorkerUrls.setText("rmi://localhost:1099/Worker1");
+        scrollWorkerUrls.setViewportView(txtWorkerUrls);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -296,7 +302,7 @@ public class FormPrincipal extends javax.swing.JFrame {
                                         .addComponent(txtParallelThreads, javax.swing.GroupLayout.PREFERRED_SIZE, 120,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(lblWorkerUrls)
-                                        .addComponent(txtWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE, 220,
+                                        .addComponent(scrollWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE, 220,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(txtTempo, javax.swing.GroupLayout.PREFERRED_SIZE, 128,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -389,7 +395,7 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(lblWorkerUrls)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(txtWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                .addComponent(scrollWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                         javax.swing.GroupLayout.DEFAULT_SIZE,
                                                         javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
@@ -1052,6 +1058,7 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField txtCoeficienteMaterial;
     private javax.swing.JTextField txtParallelThreads;
     private javax.swing.JTextField txtTempo;
-    private javax.swing.JTextField txtWorkerUrls;
+    private javax.swing.JScrollPane scrollWorkerUrls;
+    private javax.swing.JTextArea txtWorkerUrls;
     // End of variables declaration//GEN-END:variables
 }
