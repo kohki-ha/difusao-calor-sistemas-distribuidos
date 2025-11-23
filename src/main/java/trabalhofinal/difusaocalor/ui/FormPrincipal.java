@@ -10,6 +10,12 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 
 import trabalhofinal.difusaocalor.simulator.*;
@@ -29,6 +35,11 @@ public class FormPrincipal extends javax.swing.JFrame {
     private HeatGridPanel heatPanel;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel lblStatus;
+
+    // processos de worker iniciados pela UI (nome -> Process)
+    private Map<String, Process> workerProcesses = new ConcurrentHashMap<>();
+    // URLs dos workers iniciados pela UI (nome -> rmi://...)
+    private Map<String, String> workerUrls = new ConcurrentHashMap<>();
 
     /**
      * Creates new form FormPrincipal
@@ -230,6 +241,22 @@ public class FormPrincipal extends javax.swing.JFrame {
             }
         });
 
+        // Botões para gerenciar workers locais
+        btnStartWorker = new javax.swing.JButton();
+        btnStopWorker = new javax.swing.JButton();
+        btnStartWorker.setText("Iniciar Worker");
+        btnStartWorker.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStartWorkerActionPerformed(evt);
+            }
+        });
+        btnStopWorker.setText("Parar Worker");
+        btnStopWorker.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStopWorkerActionPerformed(evt);
+            }
+        });
+
         // remover borda externa para que a malha comece na borda do painel
         pnMalha.setBorder(null);
         pnMalha.setToolTipText("");
@@ -325,12 +352,16 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(lblPosicaoCalor)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                        111, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(btnLimpar, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
+                                            javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
+                                            javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                            111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnStartWorker, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                            111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnStopWorker, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                            111, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(57, 57, 57)
                                 .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
                                         javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -361,7 +392,11 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(btnLimpar)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(btnResultados))
+                                                .addComponent(btnResultados)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnStartWorker)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnStopWorker))
                                         .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -554,6 +589,97 @@ public class FormPrincipal extends javax.swing.JFrame {
 
         worker.execute();
     }// GEN-LAST:event_btnResultadosActionPerformed
+
+    private void btnStartWorkerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStartWorkerActionPerformed
+        String name = JOptionPane.showInputDialog(this, "Nome do worker (ex: Worker1):");
+        if (name == null || name.trim().isEmpty())
+            return;
+        String portStr = JOptionPane.showInputDialog(this, "Porta (ex: 1099):", "1099");
+        if (portStr == null)
+            return;
+        try {
+            int port = Integer.parseInt(portStr.trim());
+            if (workerProcesses.containsKey(name)) {
+                JOptionPane.showMessageDialog(this, "Worker com este nome já foi iniciado pela UI.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", "target\\classes",
+                    "trabalhofinal.difusaocalor.rmi.WorkerServer", name, String.valueOf(port));
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            workerProcesses.put(name, p);
+            // registra URL do worker e adiciona ao campo de URLs (evita duplicatas)
+            String url = String.format("rmi://localhost:%d/%s", port, name);
+            workerUrls.put(name, url);
+            String existing = txtWorkerUrls.getText().trim();
+            if (existing.isEmpty()) {
+                txtWorkerUrls.setText(url);
+            } else if (!existing.contains(url)) {
+                txtWorkerUrls.setText(existing + "," + url);
+            }
+            new Thread(() -> {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        System.out.println("[" + name + "] " + line);
+                    }
+                } catch (IOException ex) {
+                    System.out.println("Erro ao ler saída de " + name + ": " + ex.getMessage());
+                }
+            }, "WorkerLog-" + name).start();
+            JOptionPane.showMessageDialog(this, "Worker iniciado: " + name, "Iniciado",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Porta inválida.", "Erro", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Falha ao iniciar processo: " + ex.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }// GEN-LAST:event_btnStartWorkerActionPerformed
+
+    private void btnStopWorkerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStopWorkerActionPerformed
+        if (workerProcesses.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum worker iniciado pela UI.", "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        Object[] names = workerProcesses.keySet().toArray();
+        String sel = (String) JOptionPane.showInputDialog(this, "Escolha worker para parar:", "Parar Worker",
+                JOptionPane.PLAIN_MESSAGE, null, names, names[0]);
+        if (sel == null)
+            return;
+        Process p = workerProcesses.remove(sel);
+        if (p != null) {
+            p.destroy();
+            try {
+                if (!p.waitFor(2, TimeUnit.SECONDS))
+                    p.destroyForcibly();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            // remove URL do campo caso tenha sido adicionada pela UI
+            String removedUrl = workerUrls.remove(sel);
+            if (removedUrl != null) {
+                String existing = txtWorkerUrls.getText();
+                String[] parts = existing.split(",");
+                StringBuilder sb = new StringBuilder();
+                for (String purl : parts) {
+                    String t = purl.trim();
+                    if (t.isEmpty() || t.equals(removedUrl))
+                        continue;
+                    if (sb.length() > 0)
+                        sb.append(",");
+                    sb.append(t);
+                }
+                txtWorkerUrls.setText(sb.toString());
+            }
+            JOptionPane.showMessageDialog(this, "Worker parado: " + sel, "Parado",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Worker não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }// GEN-LAST:event_btnStopWorkerActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEnviarActionPerformed
         gerarMalha();
@@ -996,15 +1122,6 @@ public class FormPrincipal extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code
-        // (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the default
-         * look and feel.
-         * For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -1039,6 +1156,8 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnEnviar;
     private javax.swing.JToggleButton btnLimpar;
     private javax.swing.JButton btnResultados;
+    private javax.swing.JButton btnStartWorker;
+    private javax.swing.JButton btnStopWorker;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbBaixo;
     private javax.swing.JCheckBox cbCima;
@@ -1060,5 +1179,4 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField txtTempo;
     private javax.swing.JScrollPane scrollWorkerUrls;
     private javax.swing.JTextArea txtWorkerUrls;
-    // End of variables declaration//GEN-END:variables
 }

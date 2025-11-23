@@ -23,12 +23,29 @@ import trabalhofinal.difusaocalor.rmi.Worker;
 public class DistributedHeatSimulator extends AbstractHeatSimulator {
 
 	private final List<String> workerUrls;
+	private final List<Worker> workerCache;
 	private final ExecutorService executor;
 
 	public DistributedHeatSimulator(int n, double alpha, List<String> workerUrls) {
 		super(n, alpha);
 		this.workerUrls = new ArrayList<>(workerUrls);
+		this.workerCache = new ArrayList<>();
 		this.executor = Executors.newFixedThreadPool(Math.max(1, workerUrls.size()));
+		initializeWorkers();
+	}
+
+	private void initializeWorkers() {
+		for (String url : workerUrls) {
+			try {
+				Worker w = (Worker) Naming.lookup(url);
+				workerCache.add(w);
+				// Inicializa a matriz uma única vez no worker
+				w.initializeMatrix(T, n);
+			} catch (Exception ex) {
+				System.err.println("Aviso: falha ao conectar com worker " + url + ": " + ex.getMessage());
+				workerCache.add(null);
+			}
+		}
 	}
 
 	public DistributedHeatSimulator(int n, double alpha, String... workerUrls) {
@@ -38,12 +55,12 @@ public class DistributedHeatSimulator extends AbstractHeatSimulator {
 	@Override
 	protected void computeStep() {
 		int interior = Math.max(0, n - 2);
-		if (interior == 0 || workerUrls.isEmpty()) {
+		if (interior == 0 || workerCache.isEmpty()) {
 			localCompute(1, n - 2);
 			return;
 		}
 
-		int workers = workerUrls.size();
+		int workers = workerCache.size();
 		int base = interior / workers;
 		int rem = interior % workers;
 
@@ -57,15 +74,22 @@ public class DistributedHeatSimulator extends AbstractHeatSimulator {
 			}
 			int start = cur;
 			int end = Math.min(n - 2, cur + chunk - 1);
-			final String url = workerUrls.get(i);
+			Worker w = workerCache.get(i);
 			final int s = start;
 			final int e = end;
 
+			if (w == null) {
+				localCompute(s, e);
+				cur = end + 1;
+				continue;
+			}
+
 			Callable<WorkerResult> task = () -> {
 				try {
-					Worker w = (Worker) Naming.lookup(url);
-					double[][] block = w.computeBlock(getTemperatureCopy(), s, e, n, alpha, dx, dy, dt);
-					return new WorkerResult(s, e, block, null);
+					// Envia apenas o bloco necessário (startRow-1 até endRow+1) para reduzir overhead
+					double[][] compactBlock = extractBlock(T, s - 1, e + 1);
+					double[][] resultBlock = w.computeBlock(compactBlock, s, e, alpha, dx, dy, dt);
+					return new WorkerResult(s, e, resultBlock, null);
 				} catch (RemoteException re) {
 					return new WorkerResult(s, e, null, re);
 				} catch (Exception ex) {
@@ -109,6 +133,32 @@ public class DistributedHeatSimulator extends AbstractHeatSimulator {
 				newT[i][j] = t + coefX * tx + coefY * ty;
 			}
 		}
+	}
+
+	/**
+	 * Extrai um bloco compactado de linhas (startRow até endRow) com linhas vizinhas.
+	 * Isso reduz o overhead de serialização em comparação com enviar a matriz inteira.
+	 */
+	private double[][] extractBlock(double[][] mat, int startRow, int endRow) {
+		startRow = Math.max(0, startRow);
+		endRow = Math.min(n - 1, endRow);
+		if (startRow > endRow)
+			return new double[0][];
+
+		int rows = endRow - startRow + 1;
+		double[][] block = new double[rows][n];
+		for (int i = 0; i < rows; i++) {
+			System.arraycopy(mat[startRow + i], 0, block[i], 0, n);
+		}
+		return block;
+	}
+
+	@Override
+	protected void postStepHook() {
+		// O postStepHook foi removido porque atualizar a matriz completa a cada step
+		// causa overhead excessivo de RMI. Os workers já têm a matriz cacheada e
+		// recebem apenas blocos compactados para computar, então a atualização completa
+		// não é necessária a cada iteração.
 	}
 
 	private static class WorkerResult {
