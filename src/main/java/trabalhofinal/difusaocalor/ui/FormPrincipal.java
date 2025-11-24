@@ -10,6 +10,12 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 
 import trabalhofinal.difusaocalor.simulator.*;
@@ -29,6 +35,13 @@ public class FormPrincipal extends javax.swing.JFrame {
     private HeatGridPanel heatPanel;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel lblStatus;
+
+    // processos de worker iniciados pela UI (nome -> Process)
+    private Map<String, Process> workerProcesses = new ConcurrentHashMap<>();
+    // URLs dos workers iniciados pela UI (nome -> rmi://...)
+    private Map<String, String> workerUrls = new ConcurrentHashMap<>();
+    // última porta usada para worker (auto-incremento)
+    private int lastWorkerPort = 1098;
 
     /**
      * Creates new form FormPrincipal
@@ -152,6 +165,7 @@ public class FormPrincipal extends javax.swing.JFrame {
         lblWorkerUrls = new javax.swing.JLabel();
         scrollWorkerUrls = new javax.swing.JScrollPane();
         txtWorkerUrls = new javax.swing.JTextArea();
+        progressBarBenchmark = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -230,6 +244,26 @@ public class FormPrincipal extends javax.swing.JFrame {
             }
         });
 
+        // Botões para gerenciar workers locais
+        btnStartWorker = new javax.swing.JButton();
+        btnStopWorker = new javax.swing.JButton();
+        btnStartWorker.setText("Iniciar Worker");
+        btnStartWorker.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStartWorkerActionPerformed(evt);
+            }
+        });
+        btnStopWorker.setText("Parar Worker");
+        btnStopWorker.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStopWorkerActionPerformed(evt);
+            }
+        });
+
+        progressBarBenchmark.setStringPainted(true);
+        progressBarBenchmark.setString("Pronto");
+        progressBarBenchmark.setVisible(false);
+
         // remover borda externa para que a malha comece na borda do painel
         pnMalha.setBorder(null);
         pnMalha.setToolTipText("");
@@ -276,7 +310,7 @@ public class FormPrincipal extends javax.swing.JFrame {
         txtWorkerUrls.setRows(2);
         txtWorkerUrls.setLineWrap(true);
         txtWorkerUrls.setWrapStyleWord(true);
-        txtWorkerUrls.setText("rmi://localhost:1099/Worker1");
+        txtWorkerUrls.setText("");
         scrollWorkerUrls.setViewportView(txtWorkerUrls);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -304,6 +338,10 @@ public class FormPrincipal extends javax.swing.JFrame {
                                         .addComponent(lblWorkerUrls)
                                         .addComponent(scrollWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE, 220,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnStartWorker, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(btnStopWorker, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(txtTempo, javax.swing.GroupLayout.PREFERRED_SIZE, 128,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(lblTempo))
@@ -330,6 +368,9 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 111,
                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(btnResultados, javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(progressBarBenchmark,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE,
                                                         111, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(57, 57, 57)
                                 .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
@@ -361,7 +402,9 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addComponent(btnLimpar)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(btnResultados))
+                                                .addComponent(btnResultados)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(progressBarBenchmark))
                                         .addComponent(pnMalha, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -397,7 +440,11 @@ public class FormPrincipal extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(scrollWorkerUrls, javax.swing.GroupLayout.PREFERRED_SIZE,
                                                         javax.swing.GroupLayout.DEFAULT_SIZE,
-                                                        javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnStartWorker)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnStopWorker)))
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
         pack();
@@ -454,7 +501,7 @@ public class FormPrincipal extends javax.swing.JFrame {
         int n;
         double alpha;
         int steps;
-        int repeats = 3; // padrão
+        int repeats = 5; // padrão
         try {
             n = Integer.parseInt(txtAltura.getText());
             alpha = Double.parseDouble(txtCoeficienteMaterial.getText());
@@ -490,6 +537,9 @@ public class FormPrincipal extends javax.swing.JFrame {
         btnResultados.setEnabled(false);
         btnEnviar.setEnabled(false);
         btnLimpar.setEnabled(false);
+        progressBarBenchmark.setVisible(true);
+        progressBarBenchmark.setValue(0);
+        progressBarBenchmark.setString("Executando benchmark... 0%");
 
         javax.swing.SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
             private BenchmarkUtil.Stats seqStats;
@@ -498,11 +548,21 @@ public class FormPrincipal extends javax.swing.JFrame {
 
             @Override
             protected Void doInBackground() throws Exception {
+                progressBarBenchmark.setValue(10);
+                progressBarBenchmark.setString("Modo sequencial... 10%");
                 seqStats = BenchmarkUtil.runSequential(fn, falpha, fsteps, frepeats);
+
+                progressBarBenchmark.setValue(40);
+                progressBarBenchmark.setString("Modo paralelo... 40%");
                 parStats = BenchmarkUtil.runParallel(fn, falpha, fsteps, frepeats, fParallelThreads);
+
                 if (!urls.isEmpty()) {
+                    progressBarBenchmark.setValue(70);
+                    progressBarBenchmark.setString("Modo distribuído... 70%");
                     distStats = BenchmarkUtil.runDistributed(fn, falpha, fsteps, frepeats, urls);
                 }
+                progressBarBenchmark.setValue(100);
+                progressBarBenchmark.setString("Concluído! 100%");
                 return null;
             }
 
@@ -511,25 +571,23 @@ public class FormPrincipal extends javax.swing.JFrame {
                 btnResultados.setEnabled(true);
                 btnEnviar.setEnabled(true);
                 btnLimpar.setEnabled(true);
+                progressBarBenchmark.setVisible(false);
 
-                String header = String.format("Benchmark (n=%d steps=%d repeats=%d)", fn, fsteps, frepeats);
+                String header = String.format(
+                        "Benchmark - Dimensão: %d | Coeficiente: %.2f | Tempo: %d | Threads: %d | WorkersRMI: %d",
+                        fn, falpha, fsteps, fParallelThreads, urls.size());
 
                 // cria diálogo com texto e gráfico
                 javax.swing.JDialog dlg = new javax.swing.JDialog(FormPrincipal.this, "Resultados do Benchmark", true);
                 dlg.setLayout(new java.awt.BorderLayout());
 
-                StringBuilder sb = new StringBuilder();
-                sb.append("Estatísticas por modo:\n");
-                appendModeStats("Sequencial", seqStats, sb);
-                appendModeStats("Paralelo", parStats, sb);
-                appendModeStats("Distribuído", distStats, sb);
-
                 BestModeResult best = determineBestMode(seqStats, parStats, distStats);
+                String bestModeText = "";
                 if (best != null) {
-                    sb.append(String.format("\nModo com menor média: %s (%.6fs)\n", best.label, best.mean));
+                    bestModeText = String.format("\nModo com menor média: %s (%.6fs)", best.label, best.mean);
                 }
 
-                javax.swing.JTextArea ta = new javax.swing.JTextArea(header + "\n\n" + sb.toString());
+                javax.swing.JTextArea ta = new javax.swing.JTextArea(header + bestModeText);
                 ta.setEditable(false);
                 ta.setBackground(dlg.getBackground());
                 ta.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -537,14 +595,59 @@ public class FormPrincipal extends javax.swing.JFrame {
 
                 BenchmarkChartPanel chart = new BenchmarkChartPanel(seqStats == null ? null : seqStats.runs,
                         parStats == null ? null : parStats.runs, distStats == null ? null : distStats.runs);
-                chart.setPreferredSize(new java.awt.Dimension(600, 300));
+                chart.setPreferredSize(new java.awt.Dimension(800, 350));
                 dlg.add(chart, java.awt.BorderLayout.CENTER);
+
+                // cria tabela comparativa de tempos
+                javax.swing.JPanel tablePanel = new javax.swing.JPanel(new java.awt.BorderLayout());
+                tablePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+                int maxRuns = Math.max(seqStats != null ? seqStats.runs.size() : 0,
+                        Math.max(parStats != null ? parStats.runs.size() : 0,
+                                distStats != null ? distStats.runs.size() : 0));
+
+                String[] columnNames = { "Execução", "Sequencial (s)", "Paralelo (s)", "Distribuído (s)" };
+                Object[][] tableData = new Object[maxRuns + 1][4]; // +1 para linha de média
+
+                for (int i = 0; i < maxRuns; i++) {
+                    tableData[i][0] = "#" + (i + 1);
+                    tableData[i][1] = seqStats != null && i < seqStats.runs.size()
+                            ? String.format("%.6f", seqStats.runs.get(i))
+                            : "-";
+                    tableData[i][2] = parStats != null && i < parStats.runs.size()
+                            ? String.format("%.6f", parStats.runs.get(i))
+                            : "-";
+                    tableData[i][3] = distStats != null && i < distStats.runs.size()
+                            ? String.format("%.6f", distStats.runs.get(i))
+                            : "-";
+                }
+
+                // adiciona linha de média
+                tableData[maxRuns][0] = "Média";
+                tableData[maxRuns][1] = seqStats != null && !Double.isNaN(seqStats.mean)
+                        ? String.format("%.6f", seqStats.mean)
+                        : "-";
+                tableData[maxRuns][2] = parStats != null && !Double.isNaN(parStats.mean)
+                        ? String.format("%.6f", parStats.mean)
+                        : "-";
+                tableData[maxRuns][3] = distStats != null && !Double.isNaN(distStats.mean)
+                        ? String.format("%.6f", distStats.mean)
+                        : "-";
+
+                javax.swing.JTable table = new javax.swing.JTable(tableData, columnNames);
+                table.setEnabled(false);
+                table.getTableHeader().setReorderingAllowed(false);
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(table);
+                scrollPane.setPreferredSize(new java.awt.Dimension(800, 150));
+                tablePanel.add(scrollPane, java.awt.BorderLayout.CENTER);
 
                 javax.swing.JButton close = new javax.swing.JButton("Fechar");
                 close.addActionListener(ae -> dlg.dispose());
                 javax.swing.JPanel bottom = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
                 bottom.add(close);
-                dlg.add(bottom, java.awt.BorderLayout.SOUTH);
+                tablePanel.add(bottom, java.awt.BorderLayout.SOUTH);
+
+                dlg.add(tablePanel, java.awt.BorderLayout.SOUTH);
 
                 dlg.pack();
                 dlg.setLocationRelativeTo(FormPrincipal.this);
@@ -554,6 +657,99 @@ public class FormPrincipal extends javax.swing.JFrame {
 
         worker.execute();
     }// GEN-LAST:event_btnResultadosActionPerformed
+
+    private void btnStartWorkerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStartWorkerActionPerformed
+        String name = JOptionPane.showInputDialog(this, "Nome do worker (ex: Worker1):");
+        if (name == null || name.trim().isEmpty())
+            return;
+        // incrementa a porta automaticamente
+        lastWorkerPort++;
+        String portStr = JOptionPane.showInputDialog(this, "Porta (ex: 1099):", String.valueOf(lastWorkerPort));
+        if (portStr == null)
+            return;
+        try {
+            int port = Integer.parseInt(portStr.trim());
+            if (workerProcesses.containsKey(name)) {
+                JOptionPane.showMessageDialog(this, "Worker com este nome já foi iniciado pela UI.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            ProcessBuilder pb = new ProcessBuilder("java", "-cp", "target\\classes",
+                    "trabalhofinal.difusaocalor.rmi.WorkerServer", name, String.valueOf(port));
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            workerProcesses.put(name, p);
+            // registra URL do worker e adiciona ao campo de URLs (evita duplicatas)
+            String url = String.format("rmi://localhost:%d/%s", port, name);
+            workerUrls.put(name, url);
+            String existing = txtWorkerUrls.getText().trim();
+            if (existing.isEmpty()) {
+                txtWorkerUrls.setText(url);
+            } else if (!existing.contains(url)) {
+                txtWorkerUrls.setText(existing + "," + url);
+            }
+            new Thread(() -> {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        System.out.println("[" + name + "] " + line);
+                    }
+                } catch (IOException ex) {
+                    System.out.println("Erro ao ler saída de " + name + ": " + ex.getMessage());
+                }
+            }, "WorkerLog-" + name).start();
+            JOptionPane.showMessageDialog(this, "Worker iniciado: " + name, "Iniciado",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Porta inválida.", "Erro", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Falha ao iniciar processo: " + ex.getMessage(), "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }// GEN-LAST:event_btnStartWorkerActionPerformed
+
+    private void btnStopWorkerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStopWorkerActionPerformed
+        if (workerProcesses.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum worker iniciado pela UI.", "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        Object[] names = workerProcesses.keySet().toArray();
+        String sel = (String) JOptionPane.showInputDialog(this, "Escolha worker para parar:", "Parar Worker",
+                JOptionPane.PLAIN_MESSAGE, null, names, names[0]);
+        if (sel == null)
+            return;
+        Process p = workerProcesses.remove(sel);
+        if (p != null) {
+            p.destroy();
+            try {
+                if (!p.waitFor(2, TimeUnit.SECONDS))
+                    p.destroyForcibly();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            // remove URL do campo caso tenha sido adicionada pela UI
+            String removedUrl = workerUrls.remove(sel);
+            if (removedUrl != null) {
+                String existing = txtWorkerUrls.getText();
+                String[] parts = existing.split(",");
+                StringBuilder sb = new StringBuilder();
+                for (String purl : parts) {
+                    String t = purl.trim();
+                    if (t.isEmpty() || t.equals(removedUrl))
+                        continue;
+                    if (sb.length() > 0)
+                        sb.append(",");
+                    sb.append(t);
+                }
+                txtWorkerUrls.setText(sb.toString());
+            }
+            JOptionPane.showMessageDialog(this, "Worker parado: " + sel, "Parado",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Worker não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }// GEN-LAST:event_btnStopWorkerActionPerformed
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEnviarActionPerformed
         gerarMalha();
@@ -913,15 +1109,6 @@ public class FormPrincipal extends javax.swing.JFrame {
         this.setTitle("Difusão de Calor");
     }
 
-    private void appendModeStats(String label, BenchmarkUtil.Stats stats, StringBuilder sb) {
-        if (hasStats(stats)) {
-            sb.append(String.format("%s — média=%.6fs mediana=%.6fs sd=%.6fs (%d execuções)\n", label, stats.mean,
-                    stats.median, stats.sd, stats.runs.size()));
-        } else {
-            sb.append(String.format("%s — sem dados\n", label));
-        }
-    }
-
     private boolean hasStats(BenchmarkUtil.Stats stats) {
         return stats != null && stats.runs != null && !stats.runs.isEmpty() && !Double.isNaN(stats.mean);
     }
@@ -996,15 +1183,6 @@ public class FormPrincipal extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code
-        // (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the default
-         * look and feel.
-         * For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -1039,6 +1217,8 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton btnEnviar;
     private javax.swing.JToggleButton btnLimpar;
     private javax.swing.JButton btnResultados;
+    private javax.swing.JButton btnStartWorker;
+    private javax.swing.JButton btnStopWorker;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbBaixo;
     private javax.swing.JCheckBox cbCima;
@@ -1051,6 +1231,7 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JLabel lblTempo;
     private javax.swing.JLabel lblWorkerUrls;
     private javax.swing.JPanel pnMalha;
+    private javax.swing.JProgressBar progressBarBenchmark;
     private javax.swing.JRadioButton rbDistribuido;
     private javax.swing.JRadioButton rbParalelo;
     private javax.swing.JRadioButton rbSequencial;
@@ -1060,5 +1241,4 @@ public class FormPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField txtTempo;
     private javax.swing.JScrollPane scrollWorkerUrls;
     private javax.swing.JTextArea txtWorkerUrls;
-    // End of variables declaration//GEN-END:variables
 }

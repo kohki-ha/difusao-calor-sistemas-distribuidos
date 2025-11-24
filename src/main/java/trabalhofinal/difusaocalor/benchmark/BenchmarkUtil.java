@@ -59,17 +59,20 @@ public class BenchmarkUtil {
         if (workerUrls == null || workerUrls.isEmpty())
             return buildStats(times);
 
-        for (int r = 0; r < repeats; r++) {
-            DistributedHeatSimulator sim = new DistributedHeatSimulator(n, alpha, workerUrls);
-            sim.setBoundaryFlags(true, false, false, false);
-            try {
+        DistributedHeatSimulator sim = new DistributedHeatSimulator(n, alpha, workerUrls);
+        sim.setBoundaryFlags(true, false, false, false);
+
+        try {
+            for (int r = 0; r < repeats; r++) {
+                // Reinicia a matriz para cada repetição
+                sim.resetToInitialState();
                 double s = sim.measureRunSeconds(steps, true);
                 times.add(s);
-            } finally {
-                try {
-                    sim.shutdown();
-                } catch (Exception ignore) {
-                }
+            }
+        } finally {
+            try {
+                sim.shutdown();
+            } catch (Exception ignore) {
             }
         }
         return buildStats(times);
