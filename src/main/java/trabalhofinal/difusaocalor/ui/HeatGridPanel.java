@@ -7,8 +7,27 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 
 /**
- * Painel que desenha a malha de temperaturas em uma única superfície.
- * Isso evita criar N*N componentes e elimina gaps/linhas indesejadas.
+ * Painel customizado Swing para visualização da malha de temperaturas.
+ * 
+ * Renderiza a matriz de temperaturas como um grid de células coloridas,
+ * onde cada cor representa uma temperatura diferente:
+ * - Azul → Verde: temperaturas baixas (20°C → 50°C)
+ * - Verde → Vermelho: temperaturas altas (50°C → 100°C)
+ * 
+ * Otimização importante:
+ * - Desenha tudo em uma única superfície (paintComponent override)
+ * - Evita criar n² componentes Swing individuais (muito lento para malhas
+ * grandes)
+ * - Elimina gaps/linhas indesejadas entre células
+ * 
+ * Recursos configuráveis:
+ * - Grade opcional (linhas divisórias entre células)
+ * - Cor e espessura da grade
+ * - Ajuste automático ao tamanho do container
+ * - Distribuição uniforme de pixels extras quando dimensões não são múltiplas
+ * exatas
+ * 
+ * Ideal para simulações interativas em tempo real.
  */
 public class HeatGridPanel extends JPanel {
 
@@ -68,25 +87,28 @@ public class HeatGridPanel extends JPanel {
         int w = getWidth();
         int h = getHeight();
 
-        // calcula tamanho de cada célula (pode haver restos; distribuímos os pixels
-        // extras)
+        // Calcula tamanho base de cada célula
         int cellW = w / n;
         int cellH = h / n;
+
+        // Pixels extras (quando dimensões não são múltiplas exatas de n)
+        // Serão distribuídos entre as primeiras células para preencher completamente
         int remW = w - (cellW * n);
         int remH = h - (cellH * n);
 
-        int y = 0;
-        // store column widths and row heights to draw grid lines precisely
+        // Armazena largura/altura real de cada coluna/linha após distribuição
         int[] colW = new int[n];
         int[] rowH = new int[n];
 
         for (int i = 0; i < n; i++) {
-            rowH[i] = cellH + (i < remH ? 1 : 0);
+            rowH[i] = cellH + (i < remH ? 1 : 0); // Primeiras remH linhas ganham +1 pixel
         }
         for (int j = 0; j < n; j++) {
-            colW[j] = cellW + (j < remW ? 1 : 0);
+            colW[j] = cellW + (j < remW ? 1 : 0); // Primeiras remW colunas ganham +1 pixel
         }
 
+        // Desenha células coloridas
+        int y = 0;
         for (int i = 0; i < n; i++) {
             int thisCellH = rowH[i];
             int x = 0;
@@ -100,12 +122,12 @@ public class HeatGridPanel extends JPanel {
             y += thisCellH;
         }
 
-        // desenha linhas de grade sobre as células, se solicitado
+        // Desenha grade (linhas divisórias) se habilitado
         if (showGrid && n > 0) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setColor(gridColor);
 
-            // vertical lines
+            // Linhas verticais
             int cumX = 0;
             for (int j = 0; j < n - 1; j++) {
                 cumX += colW[j];
@@ -114,7 +136,7 @@ public class HeatGridPanel extends JPanel {
                 }
             }
 
-            // horizontal lines
+            // Linhas horizontais
             int cumY = 0;
             for (int i2 = 0; i2 < n - 1; i2++) {
                 cumY += rowH[i2];
@@ -127,6 +149,18 @@ public class HeatGridPanel extends JPanel {
         }
     }
 
+    /**
+     * Mapeia temperatura para cor usando gradiente de calor.
+     * 
+     * Escala assumida: 20°C (mínimo) até 100°C (máximo)
+     * - [20, 50]: Azul → Verde (frio → morno)
+     * - [50, 100]: Verde → Vermelho (morno → quente)
+     * 
+     * Valores fora do intervalo são limitados (clamp) aos extremos.
+     * 
+     * @param temp temperatura em graus Celsius
+     * @return cor RGB correspondente
+     */
     private Color getColorFromTemperature(double temp) {
         temp = Math.max(20, Math.min(100, temp));
 

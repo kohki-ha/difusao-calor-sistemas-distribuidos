@@ -1,12 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package trabalhofinal.difusaocalor.ui;
 
-// import javax.swing.border.LineBorder; (não usado após remoção das bordas das células)
 import java.awt.BorderLayout;
-// import java.awt.Color; (não usado aqui)
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,8 +17,26 @@ import trabalhofinal.difusaocalor.benchmark.BenchmarkUtil;
 import trabalhofinal.difusaocalor.benchmark.BenchmarkChartPanel;
 
 /**
- *
- * @author Kaneko
+ * Interface gráfica principal do simulador de difusão de calor.
+ * 
+ * Permite configurar e executar simulações nos três modos disponíveis:
+ * - Sequencial: execução single-thread para baseline
+ * - Paralelo: execução multi-thread usando todos os cores da CPU
+ * - Distribuído: delegação de cálculos para workers RMI remotos
+ * 
+ * Funcionalidades principais:
+ * - Configuração interativa de parâmetros (dimensão, coeficiente, tempo)
+ * - Visualização em tempo real da evolução da temperatura
+ * - Benchmark automatizado com estatísticas comparativas
+ * - Gerenciamento de workers RMI (iniciar/parar processos locais)
+ * - Animação suavizada com downsampling para malhas grandes
+ * 
+ * Características técnicas:
+ * - SwingWorker para operações assíncronas (evita travamento da UI)
+ * - Progress bars com porcentagem para feedback visual
+ * - Tabelas comparativas de desempenho com médias
+ * - Validação de entrada em tempo real
+ * - Auto-incremento de portas para workers
  */
 public class FormPrincipal extends javax.swing.JFrame {
 
@@ -451,22 +463,18 @@ public class FormPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbCimaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbCimaActionPerformed
-        // estado do checkbox lido quando necessário pela simulação
         updateEnviarEnabled();
     }// GEN-LAST:event_cbCimaActionPerformed
 
     private void cbBaixoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbBaixoActionPerformed
-        // handler left intentionally simple; state read where needed
         updateEnviarEnabled();
     }// GEN-LAST:event_cbBaixoActionPerformed
 
     private void cbEsquerdaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbEsquerdaActionPerformed
-        // handler left intentionally simple; state read where needed
         updateEnviarEnabled();
     }// GEN-LAST:event_cbEsquerdaActionPerformed
 
     private void cbDireitaActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbDireitaActionPerformed
-        // handler left intentionally simple; state read where needed
         updateEnviarEnabled();
     }// GEN-LAST:event_cbDireitaActionPerformed
 
@@ -757,17 +765,14 @@ public class FormPrincipal extends javax.swing.JFrame {
     }// GEN-LAST:event_btnEnviarActionPerformed
 
     private void rbParaleloActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbParaleloActionPerformed
-        // seleção alterada — atualiza estado do botão Enviar
         updateEnviarEnabled();
     }// GEN-LAST:event_rbParaleloActionPerformed
 
     private void rbSequencialActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbSequencialActionPerformed
-        // seleção alterada — atualiza estado do botão Enviar
         updateEnviarEnabled();
     }// GEN-LAST:event_rbSequencialActionPerformed
 
     private void rbDistribuidoActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_rbDistribuidoActionPerformed
-        // distribuído selecionado - funcionalidade não implementada ainda
         updateEnviarEnabled();
     }// GEN-LAST:event_rbDistribuidoActionPerformed
 

@@ -9,9 +9,20 @@ import java.util.List;
 import javax.swing.JPanel;
 
 /**
- * Painel simples que desenha um gráfico de barras comparando tempos por
- * repetição
- * entre sequencial, paralelo e distribuído.
+ * Painel customizado Swing para renderização de gráfico de barras comparativo.
+ * 
+ * Visualiza os tempos de execução de cada repetição do benchmark lado a lado,
+ * comparando as três versões (Sequencial, Paralela, Distribuída).
+ * 
+ * Características visuais:
+ * - Barras agrupadas por execução (#1, #2, #3, ...)
+ * - Cores distintas: azul (sequencial), verde (paralelo), laranja (distribuído)
+ * - Grid horizontal para facilitar leitura de valores
+ * - Legenda no canto inferior esquerdo
+ * - Anti-aliasing para aparência suave
+ * - Rótulos de valores acima de cada barra
+ * 
+ * Implementa paintComponent() para desenho customizado eficiente.
  */
 public class BenchmarkChartPanel extends JPanel {
 
