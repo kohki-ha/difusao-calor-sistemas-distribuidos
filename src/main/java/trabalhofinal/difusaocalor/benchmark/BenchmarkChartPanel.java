@@ -66,8 +66,8 @@ public class BenchmarkChartPanel extends JPanel {
         }
 
         int groupWidth = availableW / repeats;
-        int barWidth = Math.max(6, groupWidth / 4);
-        int barSpacing = Math.max(2, barWidth / 4);
+        int barWidth = Math.max(10, groupWidth / 5); // barras mais largas
+        int barSpacing = Math.max(6, barWidth / 2); // mais espaçamento entre barras
         int totalBarsWidth = barWidth * 3 + barSpacing * 2;
 
         // draw y grid lines
@@ -131,9 +131,9 @@ public class BenchmarkChartPanel extends JPanel {
             g2.drawString(label, lx, margin + availableH + 16);
         }
 
-        // legend
-        int lx = w - margin - 180;
-        int ly = margin - 10;
+        // legend (canto inferior esquerdo)
+        int lx = margin + 10;
+        int ly = h - margin + 28;
         g2.setColor(new Color(100, 149, 237));
         g2.fillRect(lx, ly, 12, 12);
         g2.setColor(Color.BLACK);

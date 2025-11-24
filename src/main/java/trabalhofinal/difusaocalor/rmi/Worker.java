@@ -22,7 +22,23 @@ public interface Worker extends Remote {
             throws RemoteException;
 
     /**
-     * Atualiza a matriz do worker com novos valores (após broadcast dos resultados).
+     * Processa múltiplos steps de uma vez para reduzir overhead RMI.
+     * Retorna apenas o resultado final após N iterações.
+     */
+    double[][] computeMultipleSteps(double[][] initialBlock, int startRow, int endRow, double alpha, double dx,
+            double dy, double dt, int numSteps)
+            throws RemoteException;
+
+    /**
+     * Atualiza a matriz do worker com novos valores (após broadcast dos
+     * resultados).
      */
     void updateMatrix(double[][] newT) throws RemoteException;
+
+    /**
+     * Atualiza apenas linhas de fronteira (vizinhanças) para reduzir overhead.
+     * Envia apenas as linhas necessárias para o próximo cálculo.
+     */
+    void updateBoundaryRows(int startRow, int endRow, double[] rowBeforeStart, double[] rowAfterEnd)
+            throws RemoteException;
 }

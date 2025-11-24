@@ -1,12 +1,12 @@
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkChartPanel.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkRunner.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkUtil.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\rmi\Worker.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\rmi\WorkerImpl.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\rmi\WorkerServer.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\simulator\AbstractHeatSimulator.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\simulator\DistributedHeatSimulator.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\simulator\ParallelHeatSimulator.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\simulator\SequentialHeatSimulator.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\ui\FormPrincipal.java
-C:\Users\Silvio\Documents\GitHub\difusao-calor-sistemas-distribuidos\src\main\java\trabalhofinal\difusaocalor\ui\HeatGridPanel.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkChartPanel.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkRunner.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\benchmark\BenchmarkUtil.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\rmi\Worker.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\rmi\WorkerImpl.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\rmi\WorkerServer.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\simulator\AbstractHeatSimulator.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\simulator\DistributedHeatSimulator.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\simulator\ParallelHeatSimulator.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\simulator\SequentialHeatSimulator.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\ui\FormPrincipal.java
+C:\Users\kohki\Desktop\Sistemas Distribuidos\DifusaoCalor\src\main\java\trabalhofinal\difusaocalor\ui\HeatGridPanel.java
