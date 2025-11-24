@@ -11,6 +11,12 @@ import java.rmi.registry.LocateRegistry;
 public class WorkerServer {
 
     public static void main(String[] args) throws Exception {
+        // Configurar timeouts RMI para comunicação estável com grandes objetos
+        System.setProperty("sun.rmi.transport.tcp.responseTimeout", "30000");
+        System.setProperty("sun.rmi.transport.tcp.readTimeout", "30000");
+        System.setProperty("sun.rmi.transport.tcp.endpointIdleTimeout", "30000");
+        System.setProperty("java.rmi.server.hostname", "localhost");
+        
         if (args.length < 2) {
             System.out.println("Usage: WorkerServer <name> <port>");
             System.exit(1);
