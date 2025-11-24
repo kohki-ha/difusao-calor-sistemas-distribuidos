@@ -45,12 +45,6 @@ public class FormPrincipal extends javax.swing.JFrame {
      * Creates new form FormPrincipal
      */
     public FormPrincipal() {
-        // Aumenta o timeout de leitura do RMI ANTES de qualquer inicialização
-        System.setProperty("sun.rmi.transport.tcp.responseTimeout", "30000");
-        System.setProperty("sun.rmi.transport.tcp.readTimeout", "30000");
-        System.setProperty("sun.rmi.transport.tcp.endpointIdleTimeout", "300000");
-        System.setProperty("java.rmi.server.hostname", "localhost");
-        
         initComponents();
         // configura listeners adicionais que não são gerados pelo NetBeans
         setupListeners();
@@ -906,8 +900,9 @@ public class FormPrincipal extends javax.swing.JFrame {
         javax.swing.SwingWorker<SimulationPlaybackData, Void> worker = new javax.swing.SwingWorker<>() {
             @Override
             protected SimulationPlaybackData doInBackground() throws Exception {
-                // REMOVIDO: measurePureCompute() - não execute a simulação duas vezes
-                
+                double computeSeconds = measurePureCompute(chosenMode, n, alpha, totalSteps, urlsCopy, cima, baixo,
+                        esquerda, direita, threadCount);
+
                 AbstractHeatSimulator sim = buildSimulator(chosenMode, n, alpha, urlsCopy, threadCount);
                 sim.setBoundaryFlags(cima, baixo, esquerda, direita);
 
@@ -915,8 +910,6 @@ public class FormPrincipal extends javax.swing.JFrame {
                 frames.add(new SimulationFrame(0, downsampleMatrix(sim.getTemperatureCopy())));
 
                 int stride = Math.max(1, (int) Math.ceil((double) totalSteps / MAX_RECORDED_FRAMES));
-                
-                // Mede APENAS o tempo real de uma única execução
                 long start = System.nanoTime();
                 double[][] finalState = null;
 
@@ -932,11 +925,9 @@ public class FormPrincipal extends javax.swing.JFrame {
                 }
 
                 long end = System.nanoTime();
-                double elapsedSeconds = (end - start) / 1_000_000_000.0;
+                double elapsed = (end - start) / 1_000_000_000.0;
                 cleanupSimulator(sim);
-                
-                // Retorna: tempo real = tempo de cálculo (sem duplicação)
-                return new SimulationPlaybackData(elapsedSeconds, elapsedSeconds, frames, totalSteps, finalState);
+                return new SimulationPlaybackData(elapsed, computeSeconds, frames, totalSteps, finalState);
             }
 
             @Override
@@ -961,7 +952,22 @@ public class FormPrincipal extends javax.swing.JFrame {
         worker.execute();
     }
 
-    // REMOVIDO: private double measurePureCompute(...) - método não é mais necessário
+    private double measurePureCompute(ExecutionMode mode, int n, double alpha, int totalSteps,
+            List<String> workerUrls, boolean cima, boolean baixo, boolean esquerda, boolean direita,
+            int parallelThreads) {
+        if (totalSteps <= 0) {
+            return 0.0;
+        }
+        AbstractHeatSimulator sim = buildSimulator(mode, n, alpha, workerUrls, parallelThreads);
+        sim.setBoundaryFlags(cima, baixo, esquerda, direita);
+        long start = System.nanoTime();
+        for (int step = 0; step < totalSteps; step++) {
+            sim.step();
+        }
+        long end = System.nanoTime();
+        cleanupSimulator(sim);
+        return (end - start) / 1_000_000_000.0;
+    }
 
     private void playbackSimulation(SimulationPlaybackData data) {
         if (heatPanel == null || data.frames.isEmpty()) {
@@ -1116,12 +1122,6 @@ public class FormPrincipal extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        // Aumenta o timeout de leitura do RMI ANTES de qualquer inicialização
-        System.setProperty("sun.rmi.transport.tcp.responseTimeout", "30000");
-        System.setProperty("sun.rmi.transport.tcp.readTimeout", "30000");
-        System.setProperty("sun.rmi.transport.tcp.endpointIdleTimeout", "300000");
-        System.setProperty("java.rmi.server.hostname", "localhost");
-        
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -1142,6 +1142,7 @@ public class FormPrincipal extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(FormPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null,
                     ex);
         }
+        // </editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

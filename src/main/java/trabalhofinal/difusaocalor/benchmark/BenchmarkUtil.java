@@ -18,118 +18,81 @@ public class BenchmarkUtil {
         public final double median;
         public final double sd;
 
-        public Stats(List<Double> runs) {
+        public Stats(List<Double> runs, double mean, double median, double sd) {
             this.runs = Collections.unmodifiableList(new ArrayList<>(runs));
-            this.mean = calculateMean(runs);
-            this.median = calculateMedian(runs);
-            this.sd = calculateStdDev(runs, this.mean);
+            this.mean = mean;
+            this.median = median;
+            this.sd = sd;
         }
     }
 
     public static Stats runSequential(int n, double alpha, int steps, int repeats) {
         List<Double> times = new ArrayList<>();
-        
         for (int r = 0; r < repeats; r++) {
             SequentialHeatSimulator sim = new SequentialHeatSimulator(n, alpha);
-            
-            // Mede APENAS a execução real, UMA ÚNICA VEZ
-            long start = System.nanoTime();
-            for (int step = 0; step < steps; step++) {
-                sim.step();
-            }
-            long end = System.nanoTime();
-            
-            double seconds = (end - start) / 1_000_000_000.0;
-            times.add(seconds);
+            sim.setBoundaryFlags(true, false, false, false);
+            double s = sim.measureRunSeconds(steps, true);
+            times.add(s);
         }
-        
-        return new Stats(times);
+        return buildStats(times);
     }
 
     public static Stats runParallel(int n, double alpha, int steps, int repeats, int threadCount) {
         List<Double> times = new ArrayList<>();
         int workers = threadCount <= 0 ? Runtime.getRuntime().availableProcessors() : threadCount;
-        
         for (int r = 0; r < repeats; r++) {
             ParallelHeatSimulator sim = new ParallelHeatSimulator(n, alpha, workers);
-            
-            // Mede APENAS a execução real, UMA ÚNICA VEZ
-            long start = System.nanoTime();
-            for (int step = 0; step < steps; step++) {
-                sim.step();
+            sim.setBoundaryFlags(true, false, false, false);
+            double s;
+            try {
+                s = sim.measureRunSeconds(steps, true);
+            } finally {
+                sim.shutdown();
             }
-            long end = System.nanoTime();
-            
-            double seconds = (end - start) / 1_000_000_000.0;
-            times.add(seconds);
-            
-            sim.shutdown();
+            times.add(s);
         }
-        
-        return new Stats(times);
+        return buildStats(times);
     }
 
     public static Stats runDistributed(int n, double alpha, int steps, int repeats, List<String> workerUrls) {
         List<Double> times = new ArrayList<>();
-        
-        if (workerUrls == null || workerUrls.isEmpty()) {
-            System.err.println("Aviso: nenhuma URL de worker fornecida para modo distribuído");
-            return new Stats(times);
-        }
+        if (workerUrls == null || workerUrls.isEmpty())
+            return buildStats(times);
 
-        for (int r = 0; r < repeats; r++) {
+        DistributedHeatSimulator sim = new DistributedHeatSimulator(n, alpha, workerUrls);
+        sim.setBoundaryFlags(true, false, false, false);
+
+        try {
+            for (int r = 0; r < repeats; r++) {
+                // Reinicia a matriz para cada repetição
+                sim.resetToInitialState();
+                double s = sim.measureRunSeconds(steps, true);
+                times.add(s);
+            }
+        } finally {
             try {
-                DistributedHeatSimulator sim = new DistributedHeatSimulator(n, alpha, workerUrls);
-                
-                // Mede APENAS a execução real, UMA ÚNICA VEZ
-                long start = System.nanoTime();
-                for (int step = 0; step < steps; step++) {
-                    sim.step();
-                }
-                long end = System.nanoTime();
-                
-                double seconds = (end - start) / 1_000_000_000.0;
-                times.add(seconds);
-                
                 sim.shutdown();
-            } catch (Exception e) {
-                System.err.println("Erro na simulação distribuída (repeat " + r + "): " + e.getMessage());
-                e.printStackTrace();
+            } catch (Exception ignore) {
             }
         }
-        
-        return new Stats(times);
+        return buildStats(times);
     }
 
-    private static double calculateMean(List<Double> values) {
-        if (values.isEmpty())
-            return Double.NaN;
+    private static Stats buildStats(List<Double> times) {
+        if (times.isEmpty())
+            return new Stats(times, Double.NaN, Double.NaN, Double.NaN);
+
         double sum = 0.0;
-        for (double v : values)
-            sum += v;
-        return sum / values.size();
-    }
-
-    private static double calculateMedian(List<Double> values) {
-        if (values.isEmpty())
-            return Double.NaN;
-        List<Double> sorted = new ArrayList<>(values);
+        for (double t : times)
+            sum += t;
+        double mean = sum / times.size();
+        List<Double> sorted = new ArrayList<>(times);
         Collections.sort(sorted);
-        int size = sorted.size();
-        if (size % 2 == 0) {
-            return (sorted.get(size / 2 - 1) + sorted.get(size / 2)) / 2.0;
-        } else {
-            return sorted.get(size / 2);
-        }
-    }
-
-    private static double calculateStdDev(List<Double> values, double mean) {
-        if (values.isEmpty())
-            return Double.NaN;
-        double sum = 0.0;
-        for (double v : values) {
-            sum += (v - mean) * (v - mean);
-        }
-        return Math.sqrt(sum / values.size());
+        double median = sorted.get(sorted.size() / 2);
+        double sd = 0.0;
+        for (double t : times)
+            sd += (t - mean) * (t - mean);
+        sd = Math.sqrt(sd / times.size());
+        return new Stats(times, mean, median, sd);
     }
 }
